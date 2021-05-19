@@ -20,15 +20,23 @@ const Home = ({ userObj }) => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    const fileRef = storageService.ref().child(`${userObj.uid}/${uuidv4()}`);
-    const response = await fileRef.putString(attachment, "data_url");
-    console.log(response);
-    // await dbService.collection("tweets").add({
-    //   text: tweet, // tweet comes from setState
-    //   createdAt: Date.now(),
-    //   creatorId: userObj.uid,
-    // });
-    // setTweet(""); // to clear the input field
+    let attachmentUrl = "";
+    if (attachment != "") {
+      const attachmentRef = storageService
+        .ref()
+        .child(`${userObj.uid}/${uuidv4()}`);
+      const response = await attachmentRef.putString(attachment, "data_url");
+      attachmentUrl = await response.ref.getDownloadURL();
+    }
+    const tweetObj = {
+      text: tweet,
+      createdAt: Date.now(),
+      creatorId: userObj.uid,
+      attachmentUrl,
+    };
+    await dbService.collection("tweets").add(tweetObj);
+    setTweet(""); // to clear the input field
+    setAttachment(); // clear attachment
   };
   const onChange = (event) => {
     const {
